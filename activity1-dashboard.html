@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Activity 1 — Treatment Arms | Live Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --navy: #223974;
+    --orange: #F8991D;
+    --blue: #188CCD;
+    --teal: #00A99B;
+    --bg: #F4F6FB;
+    --card: #FFFFFF;
+    --text: #1B2436;
+    --text-dim: #8B93A7;
+    --border: #EBEEF4;
+    --danger: #E8543E;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 32px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand .mark {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--teal), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: bold; font-size: 15px;
+  }
+  .brand .name { font-weight: bold; font-size: 15px; color: var(--navy); }
+  .brand .name span { color: var(--text-dim); font-weight: normal; }
+
+  .qr-slot {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .qr-box {
+    width: 56px; height: 56px;
+    border: 1.5px dashed #C7CEDD;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #B4BCCC;
+    font-size: 10px;
+    text-align: center;
+    line-height: 1.2;
+    background: #FAFBFD;
+  }
+  .qr-label { font-size: 12px; color: var(--text-dim); }
+  .qr-label strong { display: block; color: var(--text); font-size: 13px; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 28px 32px 60px; }
+
+  .page-head { margin-bottom: 22px; }
+  .page-head h1 { margin: 0 0 4px; font-size: 24px; color: var(--navy); }
+  .page-head .sub { color: var(--text-dim); font-size: 13px; }
+  .page-head .sub .dot { color: var(--teal); margin: 0 6px; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 18px 16px;
+  }
+  .stat-card .stat-top {
+    display: flex; align-items: center; justify-content: space-between;
+    color: var(--text-dim); font-size: 13px; margin-bottom: 10px;
+  }
+  .stat-card .stat-icon {
+    width: 26px; height: 26px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: white;
+  }
+  .stat-card .stat-value { font-size: 26px; font-weight: bold; color: var(--navy); }
+
+  .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+  }
+  .card h2 { margin: 0 0 16px; font-size: 15px; font-weight: bold; color: var(--navy); }
+
+  .rank-row {
+    display: grid;
+    grid-template-columns: 30px 1fr auto 120px 46px;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rank-row:last-child { border-bottom: none; }
+  .rank-badge {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 12px;
+    background: #EAF6F4; color: var(--teal);
+  }
+  .rank-row:first-child .rank-badge { background: var(--orange); color: white; }
+  .rank-team { font-weight: bold; font-size: 14px; color: var(--text); }
+  .rank-players { color: var(--text-dim); font-size: 11px; }
+  .bar-track { height: 6px; border-radius: 4px; background: #EEF1F6; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--blue)); border-radius: 4px; }
+  .rank-pct { text-align: right; font-weight: bold; font-size: 13px; color: var(--navy); }
+
+  .mismatch-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .mismatch-row:last-child { border-bottom: none; }
+  .mismatch-count {
+    background: var(--danger); color: white; font-weight: bold; font-size: 11px;
+    border-radius: 10px; padding: 2px 9px; min-width: 20px; text-align: center;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-dim); font-weight: normal; font-size: 12px; }
+  tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; }
+
+  .empty { color: var(--text-dim); font-style: italic; padding: 6px 0; font-size: 13px; }
+
+  footer.updated { text-align: center; color: var(--text-dim); font-size: 12px; margin-top: 6px; }
+
+  @media (max-width: 800px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="mark">UP</div>
+    <div class="name">United Pharmacy <span>· Digital Activities</span></div>
+  </div>
+  <div class="qr-slot">
+    <div class="qr-label"><strong>Join the activity</strong>Scan with your phone</div>
+    <div class="qr-box" id="qrSlot">QR<br>code</div>
+  </div>
+</header>
+
+<main>
+  <div class="page-head">
+    <h1>Treatment Arms — Activity 1</h1>
+    <div class="sub">Skincare ingredient categorization <span class="dot">•</span> updates live as teams submit</div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-top">Teams submitted <div class="stat-icon" style="background:var(--navy);">◆</div></div>
+      <div class="stat-value" id="statTeams">–</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">Players <div class="stat-icon" style="background:var(--blue);">●</div></div>
+      <div class="stat-value" id="statPlayers">–</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">Leading team <div class="stat-icon" style="background:var(--orange);">★</div></div>
+      <div class="stat-value" id="statLeader">–</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">Overall adherence <div class="stat-icon" style="background:var(--teal);">%</div></div>
+      <div class="stat-value" id="statAdherence">–</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>Team ranking</h2>
+      <div id="ranking"></div>
+    </div>
+    <div class="card">
+      <h2>Most common mismatches</h2>
+      <div id="mismatches"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Player detail</h2>
+    <table>
+      <thead>
+        <tr><th>Player</th><th>Team</th><th class="num">Score</th><th class="num">Trials left</th></tr>
+      </thead>
+      <tbody id="players"></tbody>
+    </table>
+  </div>
+
+  <footer class="updated" id="updated">Loading…</footer>
+</main>
+
+<script>
+  // ---------------------------------------------------------------------
+  // API endpoint for this activity's Google Sheet backend (Apps Script).
+  // ---------------------------------------------------------------------
+  var API_URL = "https://script.google.com/macros/s/AKfycbxlmmSqQodshkcqYe-0voB0EHa7N-AEVjpfTifDfQSTGZ5SdBXmOtBs2qcXkp_lK4_L/exec";
+  var REFRESH_MS = 5000;
+
+  // JSONP fetch: needed because this page is hosted on a different origin
+  // (e.g. GitHub Pages) than script.google.com, and Apps Script responses
+  // don't carry CORS headers, so a normal fetch() would be blocked.
+  var jsonpSeq = 0;
+  function jsonpFetch(url, onData, onError) {
+    var cbName = "upc_jsonp_" + (jsonpSeq++);
+    var script = document.createElement("script");
+    var timeout = setTimeout(function () {
+      cleanup();
+      if (onError) onError(new Error("timeout"));
+    }, 10000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[cbName] = function (data) {
+      cleanup();
+      onData(data);
+    };
+    script.onerror = function () {
+      cleanup();
+      if (onError) onError(new Error("script load failed"));
+    };
+    var sep = url.indexOf("?") === -1 ? "?" : "&";
+    script.src = url + sep + "callback=" + cbName;
+    document.body.appendChild(script);
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function render(data) {
+    var teams = data.teams || [];
+    var players = data.players || [];
+
+    document.getElementById("statTeams").textContent = teams.length;
+    document.getElementById("statPlayers").textContent = players.length;
+    document.getElementById("statLeader").textContent = teams.length ? teams[0].teamNumber : "–";
+    var overallAvg = teams.length ? (teams.reduce(function (s, t) { return s + t.adherencePct; }, 0) / teams.length) : 0;
+    document.getElementById("statAdherence").textContent = teams.length ? Math.round(overallAvg * 10) / 10 + "%" : "–";
+
+    var rankingEl = document.getElementById("ranking");
+    rankingEl.innerHTML = teams.length ? teams.map(function (t, i) {
+      return '' +
+        '<div class="rank-row">' +
+          '<div class="rank-badge">' + (i + 1) + '</div>' +
+          '<div>' +
+            '<div class="rank-team">' + escapeHtml(t.teamNumber) + '</div>' +
+            '<div class="rank-players">' + t.playerCount + ' player' + (t.playerCount === 1 ? '' : 's') + '</div>' +
+          '</div>' +
+          '<div class="bar-track"><div class="bar-fill" style="width:' + t.adherencePct + '%"></div></div>' +
+          '<div class="rank-pct">' + t.adherencePct + '%</div>' +
+        '</div>';
+    }).join("") : '<div class="empty">No submissions yet</div>';
+
+    var mismatchEl = document.getElementById("mismatches");
+    var mismatches = data.topMismatches || [];
+    mismatchEl.innerHTML = mismatches.length ? mismatches.map(function (m) {
+      return '<div class="mismatch-row"><span>' + escapeHtml(m.pair) + '</span><span class="mismatch-count">' + m.count + '</span></div>';
+    }).join("") : '<div class="empty">No mismatches recorded yet</div>';
+
+    var playersEl = document.getElementById("players");
+    playersEl.innerHTML = players.length ? players.slice().reverse().map(function (p) {
+      return '<tr><td>' + escapeHtml(p.name) + '</td><td>' + escapeHtml(p.team) + '</td><td class="num">' + p.score + '</td><td class="num">' + p.trialsLeft + '</td></tr>';
+    }).join("") : '<tr><td colspan="4" class="empty">No submissions yet</td></tr>';
+
+    document.getElementById("updated").textContent = "Last updated " + data.lastUpdated;
+  }
+
+  function poll() {
+    jsonpFetch(API_URL, render, function () {
+      document.getElementById("updated").textContent = "Couldn't reach the activity sheet — retrying…";
+    });
+  }
+
+  poll();
+  setInterval(poll, REFRESH_MS);
+</script>
+
+</body>
+</html>
